@@ -5,9 +5,9 @@ WearBrowser is a WebView-based browser. Please report security issues privately 
 ## Supported Version
 
 | Version | Supported |
-|---------|-----------|
-| 1.x     | Yes       |
-| 0.x     | No        |
+|---|---|
+| 1.x | Yes |
+| 0.x | No |
 
 ## Areas of Interest
 

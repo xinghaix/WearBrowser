@@ -2,24 +2,18 @@
 
 ## Current implementation phase
 
-WearBrowser is currently in **Phase 3: Implementation Sprint 4**. The product and architecture documentation is mature,
-and the source code now contains concrete implementations of the core abstractions plus the first hardened watch-first
-gesture pipeline plus lifecycle-safe WebView ownership: `BrowserEngine`, `BrowserController`, `GestureEngine`,
-`GestureDispatcher`, `ZoomPolicy`, `TabPolicy`, `WatchLayoutEngine`, repositories, and design tokens.
+WearBrowser is currently in **Phase 3: Implementation Sprint 4**. The product and architecture documentation is mature, and the source code now contains concrete implementations of the core abstractions plus the first hardened watch-first gesture pipeline plus lifecycle-safe WebView ownership: `BrowserEngine`, `BrowserController`, `GestureEngine`, `GestureDispatcher`, `ZoomPolicy`, `TabPolicy`, `WatchLayoutEngine`, repositories, and design tokens.
 
 See `docs/07-sprints/IMPLEMENTATION_STATUS.md` for the latest engineering status.
 
+
 WearBrowser is an open-source browser designed for Android watches and small-screen Android devices.
 
-It is not a phone browser squeezed into a watch. It is designed around watch-first interactions: global edge back,
-one-finger zoom, round-screen safe area, gesture-first navigation, per-site layout memory, immersive browsing and a
-watch-oriented Reader Mode.
+It is not a phone browser squeezed into a watch. It is designed around watch-first interactions: global edge back, one-finger zoom, round-screen safe area, gesture-first navigation, per-site layout memory, immersive browsing and a watch-oriented Reader Mode.
 
 ## Current Status
 
-`v1.3.3-foundation-sprint-4` is an implementation sprint build. It contains the browser core, watch-first interaction
-layer, product-quality scaffolding, CI configuration, documentation and release preparation files. Android SDK
-validation still needs to be run in a real Android development environment.
+`v1.3.3-foundation-sprint-4` is an implementation sprint build. It contains the browser core, watch-first interaction layer, product-quality scaffolding, CI configuration, documentation and release preparation files. Android SDK validation still needs to be run in a real Android development environment.
 
 ## Features
 
@@ -53,16 +47,16 @@ validation still needs to be run in a real Android development environment.
 
 ## Interaction Model
 
-| Gesture                     | Action                           |
-|-----------------------------|----------------------------------|
-| Tap                         | Show / hide toolbar              |
-| Long press                  | Open Edge Pie Menu               |
-| Double tap                  | Reset zoom to 100%               |
-| Left edge swipe             | Back; home if no WebView history |
-| Right edge horizontal swipe | Forward                          |
-| Right edge vertical drag    | Zoom 50%~300%                    |
-| Bottom edge swipe up        | Reveal dock                      |
-| Top edge swipe down         | Reveal address/search bar dock   |
+| Gesture | Action |
+|---|---|
+| Tap | Show / hide toolbar |
+| Long press | Open Edge Pie Menu |
+| Double tap | Reset zoom to 100% |
+| Left edge swipe | Back; home if no WebView history |
+| Right edge horizontal swipe | Forward |
+| Right edge vertical drag | Zoom 50%~300% |
+| Bottom edge swipe up | Reveal dock |
+| Top edge swipe down | Reveal address/search bar dock |
 
 ## Product Principles
 
@@ -79,8 +73,7 @@ validation still needs to be run in a real Android development environment.
 ./gradlew assembleDebug
 ```
 
-If the Gradle wrapper is not present in your checkout, use Android Studio or a local Gradle installation to generate it
-once:
+If the Gradle wrapper is not present in your checkout, use Android Studio or a local Gradle installation to generate it once:
 
 ```bash
 gradle wrapper
@@ -124,7 +117,7 @@ See `CHANGELOG.md`.
 
 Apache-2.0
 
+
 ## Current Implementation Sprint
 
-Sprint 2 integrates the Compose browser surface with `BrowserEngine + BrowserController`, reducing direct WebView
-coupling and preparing the project for real build validation.
+Sprint 2 integrates the Compose browser surface with `BrowserEngine + BrowserController`, reducing direct WebView coupling and preparing the project for real build validation.
