@@ -365,7 +365,7 @@ private fun SettingsDialog(state: BrowserState) {
                 }
                 TextButton(onClick = { state.toggleReaderMode() }) { Text("Reader: ${if (state.readerMode) "ON" else "OFF"}") }
                 TextButton(onClick = { state.setDesktopMode(!state.desktopMode) }) { Text("Desktop mode: ${if (state.desktopMode) "ON" else "OFF"}") }
-                TextButton(onClick = { state.setOledBlack(!state.oledBlack) }) { Text("OLED black: ${if (state.oledBlack) "ON" else "OFF"}") }
+                TextButton(onClick = { state.updateOledBlack(!state.oledBlack) }) { Text("OLED black: ${if (state.oledBlack) "ON" else "OFF"}") }
                 TextButton(onClick = { state.toggleImmersiveMode() }) { Text("Immersive: ${if (state.immersiveMode) "ON" else "OFF"}") }
                 TextButton(onClick = { state.clearCache() }) { Text("Clear WebView cache") }
                 Text("Gestures: edge back/forward, edge zoom, bottom/top edge dock, long press pie menu")

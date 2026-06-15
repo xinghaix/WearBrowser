@@ -234,7 +234,7 @@ class BrowserState(startUrl: String, private val store: BrowserStore) {
         reload()
     }
 
-    fun setOledBlack(enabled: Boolean) {
+    fun updateOledBlack(enabled: Boolean) {
         oledBlack = enabled
         store.oledBlack = enabled
         saveCurrentSiteProfile()

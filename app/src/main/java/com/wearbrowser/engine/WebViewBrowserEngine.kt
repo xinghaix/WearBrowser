@@ -15,7 +15,7 @@ class WebViewBrowserEngine(
     private val webView: WebView,
 ) : BrowserEngine {
     private var listener: BrowserEngineListener? = null
-    private var oledBlack: Boolean = false
+    private var oledBlackEnabled: Boolean = false
     private var readerMode: Boolean = false
     private var zoomPercent: Int = 100
 
@@ -65,7 +65,7 @@ class WebViewBrowserEngine(
     }
 
     override fun setOledBlack(enabled: Boolean) {
-        oledBlack = enabled
+        oledBlackEnabled = enabled
         applyDocumentTransforms()
     }
 
@@ -169,7 +169,7 @@ class WebViewBrowserEngine(
         val js = buildString {
             append("(function(){")
             append("document.documentElement.style.zoom='$zoom';document.body.style.zoom='$zoom';")
-            if (oledBlack) {
+            if (oledBlackEnabled) {
                 append("document.documentElement.style.background='#000';document.body.style.background='#000';")
             }
             if (readerMode) append(READER_JS)
