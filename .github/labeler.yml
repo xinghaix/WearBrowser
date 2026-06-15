@@ -1,35 +1,59 @@
-area: docs:
+"area: docs":
   - changed-files:
       - any-glob-to-any-file:
-          - docs/**
-          - README.md
-          - ROADMAP.md
-          - CONTRIBUTING.md
-area: build:
+          - "docs/**"
+          - "*.md"
+
+"area: ci":
   - changed-files:
       - any-glob-to-any-file:
-          - .github/**
-          - build.gradle.kts
-          - settings.gradle.kts
-          - gradle.properties
-          - app/build.gradle.kts
-          - scripts/**
-area: browser-engine:
+          - ".github/**"
+          - "scripts/**"
+          - "config/**"
+
+"area: android":
   - changed-files:
       - any-glob-to-any-file:
-          - app/src/main/java/**/engine/**
-          - app/src/main/java/**/browser/**
-area: gesture:
+          - "app/**"
+          - "gradle/**"
+          - "gradlew"
+          - "gradlew.bat"
+          - "settings.gradle.kts"
+          - "build.gradle.kts"
+
+"area: browser-engine":
   - changed-files:
       - any-glob-to-any-file:
-          - app/src/main/java/**/gesture/**
-area: ui:
+          - "app/src/main/java/com/wearbrowser/engine/**"
+          - "app/src/main/java/com/wearbrowser/browser/**"
+
+"area: gesture":
   - changed-files:
       - any-glob-to-any-file:
-          - app/src/main/java/**/ui/**
-          - app/src/main/java/**/design/**
-area: tests:
+          - "app/src/main/java/com/wearbrowser/gesture/**"
+
+"area: ui":
   - changed-files:
       - any-glob-to-any-file:
-          - app/src/test/**
-          - app/src/androidTest/**
+          - "app/src/main/java/com/wearbrowser/ui/**"
+          - "app/src/main/java/com/wearbrowser/theme/**"
+
+"area: tests":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "app/src/test/**"
+          - "app/src/androidTest/**"
+
+"type: documentation":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "docs/**"
+          - "*.md"
+
+"type: build":
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/**"
+          - "gradle/**"
+          - "*.gradle.kts"
+          - "gradle.properties"
