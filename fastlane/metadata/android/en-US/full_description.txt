@@ -1,0 +1,3 @@
+WearBrowser is a browser designed for Android watches and small-screen Android devices.
+
+It includes edge back, one-finger zoom, round-screen safe area handling, bookmarks, history, lightweight tabs, desktop/mobile UA switching and OLED black mode.

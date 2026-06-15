@@ -1,0 +1,1 @@
+Engineering product-quality baseline: design tokens, feature flags, onboarding, privacy policy, CI quality gate, static-analysis config and test scaffolding.

@@ -1,0 +1,17 @@
+build:
+  maxIssues: 0
+style:
+  MagicNumber:
+    active: false
+  MaxLineLength:
+    active: true
+    maxLineLength: 160
+complexity:
+  LongMethod:
+    active: true
+    threshold: 80
+  TooManyFunctions:
+    active: false
+naming:
+  FunctionNaming:
+    active: true
