@@ -12,7 +12,12 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
         val store = BrowserStore(this)
-        setContent { WearBrowserTheme { BrowserScreen(store = store) } }
+        setContent {
+            WearBrowserTheme {
+                BrowserScreen(store = store)
+            }
+        }
     }
 }

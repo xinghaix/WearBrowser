@@ -2,6 +2,7 @@ package com.wearbrowser.engine
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.webkit.CookieManager
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceError
@@ -16,20 +17,28 @@ class WebViewBrowserEngine(
 ) : BrowserEngine {
     private var listener: BrowserEngineListener? = null
     private var oledBlackEnabled: Boolean = false
-    private var readerMode: Boolean = false
-    private var zoomPercent: Int = 100
+    private var readerModeEnabled: Boolean = false
+    private var zoomPercent: Int = DEFAULT_ZOOM
 
-    override val currentUrl: String? get() = webView.url
-    override val title: String? get() = webView.title
-    override val canGoBack: Boolean get() = webView.canGoBack()
-    override val canGoForward: Boolean get() = webView.canGoForward()
+    override val currentUrl: String?
+        get() = webView.url
+
+    override val title: String?
+        get() = webView.title
+
+    override val canGoBack: Boolean
+        get() = webView.canGoBack()
+
+    override val canGoForward: Boolean
+        get() = webView.canGoForward()
 
     init {
-        configure()
+        configureWebView()
     }
 
     override fun attach(listener: BrowserEngineListener) {
         this.listener = listener
+        emitNavigationState()
     }
 
     override fun detach() {
@@ -37,7 +46,9 @@ class WebViewBrowserEngine(
         webView.stopLoading()
     }
 
-    override fun load(url: String) = webView.loadUrl(url)
+    override fun load(url: String) {
+        webView.loadUrl(url)
+    }
 
     override fun goBack(): Boolean {
         if (!webView.canGoBack()) return false
@@ -51,11 +62,17 @@ class WebViewBrowserEngine(
         return true
     }
 
-    override fun reload() = webView.reload()
-    override fun stopLoading() = webView.stopLoading()
+    override fun reload() {
+        webView.reload()
+    }
+
+    override fun stopLoading() {
+        webView.stopLoading()
+    }
 
     override fun setZoom(percent: Int) {
-        zoomPercent = percent.coerceIn(50, 300)
+        zoomPercent = percent.coerceIn(MIN_ZOOM, MAX_ZOOM)
+        webView.settings.textZoom = zoomPercent
         webView.setInitialScale(zoomPercent)
         applyDocumentTransforms()
     }
@@ -70,7 +87,7 @@ class WebViewBrowserEngine(
     }
 
     override fun setReaderMode(enabled: Boolean) {
-        readerMode = enabled
+        readerModeEnabled = enabled
         applyDocumentTransforms()
     }
 
@@ -82,12 +99,13 @@ class WebViewBrowserEngine(
         val width = webView.width.takeIf { it > 0 } ?: return callback(null)
         val height = webView.height.takeIf { it > 0 } ?: return callback(null)
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        val canvas = android.graphics.Canvas(bitmap)
-        webView.draw(canvas)
+        webView.draw(Canvas(bitmap))
         callback(bitmap)
     }
 
-    override fun clearCache(includeDiskFiles: Boolean) = webView.clearCache(includeDiskFiles)
+    override fun clearCache(includeDiskFiles: Boolean) {
+        webView.clearCache(includeDiskFiles)
+    }
 
     override fun onPause() {
         webView.onPause()
@@ -109,39 +127,53 @@ class WebViewBrowserEngine(
         runCatching { webView.destroy() }
     }
 
-    private fun configure() {
+    private fun configureWebView() {
         CookieManager.getInstance().setAcceptCookie(true)
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
+
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean = false
 
             override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
                 listener?.onPageStarted(url)
-                emitNavigation()
+                emitNavigationState()
             }
 
             override fun onPageFinished(view: WebView, url: String) {
                 applyDocumentTransforms()
                 listener?.onPageFinished(url, view.title)
-                emitNavigation()
+                emitNavigationState()
             }
 
             override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
-                if (request.isForMainFrame) listener?.onError(request.url?.toString(), error.description?.toString())
+                if (request.isForMainFrame) {
+                    listener?.onError(request.url?.toString(), error.description?.toString())
+                }
             }
         }
+
         webView.webChromeClient = object : WebChromeClient() {
             override fun onProgressChanged(view: WebView, newProgress: Int) {
                 listener?.onPageProgress(newProgress)
             }
 
             override fun onReceivedTitle(view: WebView, title: String?) {
-                emitNavigation()
+                listener?.onPageFinished(view.url.orEmpty(), title)
+                emitNavigationState()
             }
         }
+
         webView.setDownloadListener { url, userAgent, contentDisposition, mimeType, _ ->
-            listener?.onDownloadRequested(BrowserDownloadRequest(url, userAgent, contentDisposition, mimeType))
+            listener?.onDownloadRequested(
+                BrowserDownloadRequest(
+                    url = url,
+                    userAgent = userAgent,
+                    contentDisposition = contentDisposition,
+                    mimeType = mimeType,
+                ),
+            )
         }
+
         with(webView.settings) {
             javaScriptEnabled = true
             domStorageEnabled = true
@@ -152,37 +184,49 @@ class WebViewBrowserEngine(
             displayZoomControls = false
             cacheMode = WebSettings.LOAD_DEFAULT
             mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
-            textZoom = 100
+            textZoom = DEFAULT_ZOOM
             defaultTextEncodingName = "utf-8"
         }
+
         webView.isVerticalScrollBarEnabled = false
         webView.isHorizontalScrollBarEnabled = false
         webView.overScrollMode = WebView.OVER_SCROLL_NEVER
     }
 
-    private fun emitNavigation() {
+    private fun emitNavigationState() {
         listener?.onNavigationStateChanged(webView.canGoBack(), webView.canGoForward())
     }
 
     private fun applyDocumentTransforms() {
-        val zoom = zoomPercent / 100f
-        val js = buildString {
+        val zoom = zoomPercent / PERCENT_BASE
+        val script = buildString {
             append("(function(){")
-            append("document.documentElement.style.zoom='$zoom';document.body.style.zoom='$zoom';")
+            append("document.documentElement.style.zoom='$zoom';")
+            append("document.body.style.zoom='$zoom';")
             if (oledBlackEnabled) {
-                append("document.documentElement.style.background='#000';document.body.style.background='#000';")
+                append("document.documentElement.style.background='#000';")
+                append("document.body.style.background='#000';")
             }
-            if (readerMode) append(READER_JS)
+            if (readerModeEnabled) append(READER_JS)
             append("})();")
         }
-        webView.evaluateJavascript(js, null)
+        webView.evaluateJavascript(script, null)
     }
 
     private companion object {
-        private const val READER_JS = """
-var s=document.getElementById('wearbrowser-reader-style');
-if(!s){s=document.createElement('style');s.id='wearbrowser-reader-style';document.head.appendChild(s);}
-s.textContent='body{max-width:42em!important;margin:0 auto!important;padding:0 .7em!important;line-height:1.65!important;background:#000!important;color:#f3f3f3!important;}article,main,[role=main]{max-width:42em!important;margin:auto!important;}nav,aside,footer,iframe,.ad,.ads,.advertisement,[class*=sidebar],[id*=sidebar],[class*=comment],[id*=comment]{display:none!important;}img,video{max-width:100%!important;height:auto!important;}a{color:#8ab4f8!important;}';
-"""
+        const val MIN_ZOOM = 50
+        const val MAX_ZOOM = 300
+        const val DEFAULT_ZOOM = 100
+        const val PERCENT_BASE = 100f
+
+        const val READER_JS = """
+            var s=document.getElementById('wearbrowser-reader-style');
+            if(!s){
+              s=document.createElement('style');
+              s.id='wearbrowser-reader-style';
+              document.head.appendChild(s);
+            }
+            s.textContent='body{max-width:42em!important;margin:0 auto!important;padding:0 .7em!important;line-height:1.65!important;background:#000!important;color:#f3f3f3!important;}article,main,[role=main]{max-width:42em!important;margin:auto!important;}nav,aside,footer,iframe,.ad,.ads,.advertisement,[class*=sidebar],[id*=sidebar],[class*=comment],[id*=comment]{display:none!important;}img,video{max-width:100%!important;height:auto!important;}a{color:#8ab4f8!important;}';
+        """
     }
 }
