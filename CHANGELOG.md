@@ -1,3 +1,11 @@
+## 1.4.0-p1-first-runnable-browser
+
+- Entered P1: First Runnable Browser.
+- Rebuilt the main browser surface around a stable address bar, WebView, progress indicator and toolbar.
+- Added URL/search navigation, Back, Forward, Reload, Stop, Home and basic zoom controls.
+- Added INTERNET permission and app theme resources required for a runnable Android app.
+- Added Sprint 6 P1 documentation and manual test checklist.
+
 ## Unreleased
 
 ### Added

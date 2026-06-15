@@ -1,4 +1,5 @@
 import io.gitlab.arturbosch.detekt.Detekt
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("com.android.application")
@@ -15,8 +16,8 @@ android {
         applicationId = "com.wearbrowser"
         minSdk = 26
         targetSdk = 35
-        versionCode = 133
-        versionName = "1.3.3-foundation-sprint-4"
+        versionCode = 140
+        versionName = "1.4.0-p1-first-runnable-browser"
     }
 
     buildFeatures {
@@ -27,9 +28,11 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+}
 
-    kotlinOptions {
-        jvmTarget = "17"
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
     }
 }
 
