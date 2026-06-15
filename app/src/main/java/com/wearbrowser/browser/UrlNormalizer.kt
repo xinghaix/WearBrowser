@@ -13,7 +13,13 @@ object UrlNormalizer {
         if (text.isEmpty()) return home
         if (text.startsWith("http://", true) || text.startsWith("https://", true)) return text
         if (looksLikeHost(text)) return "https://$text"
-        return SEARCH_PREFIX + URLEncoder.encode(text, Charsets.UTF_8.name())
+        return SEARCH_PREFIX + encodeSearchQuery(text)
+    }
+
+    private fun encodeSearchQuery(text: String): String {
+        return URLEncoder
+            .encode(text, Charsets.UTF_8.name())
+            .replace("+", "%20")
     }
 
     fun domainOf(url: String): String {
