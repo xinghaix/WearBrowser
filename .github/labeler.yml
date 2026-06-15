@@ -3,6 +3,9 @@
       - any-glob-to-any-file:
           - "docs/**"
           - "*.md"
+          - "README.md"
+          - "ROADMAP.md"
+          - "CONTRIBUTING.md"
 
 "area: ci":
   - changed-files:
@@ -20,6 +23,7 @@
           - "gradlew.bat"
           - "settings.gradle.kts"
           - "build.gradle.kts"
+          - "gradle.properties"
 
 "area: browser-engine":
   - changed-files:
