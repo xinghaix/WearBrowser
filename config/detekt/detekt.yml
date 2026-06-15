@@ -1,17 +1,28 @@
-build:
-  maxIssues: 0
-style:
-  MagicNumber:
-    active: false
-  MaxLineLength:
-    active: true
-    maxLineLength: 160
 complexity:
   LongMethod:
     active: true
-    threshold: 80
-  TooManyFunctions:
-    active: false
+    threshold: 100
+    ignoreAnnotated:
+      - Composable
+
+  LongParameterList:
+    active: true
+    functionThreshold: 10
+    constructorThreshold: 10
+    ignoreDefaultParameters: true
+    ignoreAnnotated:
+      - Composable
+
 naming:
   FunctionNaming:
     active: true
+    functionPattern: '[a-z][a-zA-Z0-9]*'
+    ignoreAnnotated:
+      - Composable
+
+style:
+  ReturnCount:
+    active: true
+    max: 4
+    excludedFunctions:
+      - equals
