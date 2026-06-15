@@ -1,0 +1,27 @@
+name: Feature request
+description: Propose a concrete user-facing feature.
+title: "feat: "
+labels: ["type: feature", "needs: triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What watch-first problem does this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Describe the desired behavior.
+    validations:
+      required: true
+  - type: checkboxes
+    id: principles
+    attributes:
+      label: Product fit
+      options:
+        - label: This improves a watch-first use case, not only a phone-style browser feature.
+        - label: This keeps UI minimal and content-first.
+        - label: This can be guarded by a feature flag if experimental.

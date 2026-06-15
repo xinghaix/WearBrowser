@@ -1,0 +1,491 @@
+diff -ruN wb_urlfix/.github/pull_request_template.md wb_ci/.github/pull_request_template.md
+--- wb_urlfix/.github/pull_request_template.md	1970-01-01 00:00:00.000000000 +0000
++++ wb_ci/.github/pull_request_template.md	2026-06-15 03:21:47.602162266 +0000
+@@ -0,0 +1,30 @@
++## Summary
++
++Describe the change and why it is needed.
++
++## Type
++
++- [ ] Bug fix
++- [ ] Feature
++- [ ] Refactor
++- [ ] Documentation
++- [ ] Test / CI
++- [ ] Performance
++
++## Watch-first checklist
++
++- [ ] Improves or preserves watch-first usability
++- [ ] Keeps round-screen behavior correct
++- [ ] Does not make basic browsing harder
++- [ ] Uses existing Engine / Repository / Design System abstractions where applicable
++- [ ] Experimental behavior is behind a Feature Flag when appropriate
++
++## Quality gate
++
++- [ ] `./gradlew testDebugUnitTest`
++- [ ] `./gradlew assembleDebug`
++- [ ] `./gradlew detekt`
++
++## Screenshots / recordings
++
++Add screenshots, emulator recordings, or watch recordings for UI changes.
+diff -ruN wb_urlfix/.github/workflows/android.yml wb_ci/.github/workflows/android.yml
+--- wb_urlfix/.github/workflows/android.yml	2026-06-15 03:17:56.519033517 +0000
++++ wb_ci/.github/workflows/android.yml	2026-06-15 03:21:47.572423328 +0000
+@@ -1,22 +1,69 @@
+-name: Android Quality Gate
++name: Android CI
+ 
+ on:
+   push:
++    branches:
++      - master
++      - main
+   pull_request:
++    branches:
++      - master
++      - main
++  workflow_dispatch:
++
++permissions:
++  contents: read
++
++concurrency:
++  group: android-ci-${{ github.ref }}
++  cancel-in-progress: true
+ 
+ jobs:
+-  quality:
++  quality-gate:
++    name: Quality Gate
+     runs-on: ubuntu-latest
++    timeout-minutes: 30
++
+     steps:
+-      - uses: actions/checkout@v4
+-      - uses: actions/setup-java@v4
++      - name: Checkout
++        uses: actions/checkout@v4
++
++      - name: Set up JDK 17
++        uses: actions/setup-java@v4
+         with:
+           distribution: temurin
+           java-version: 17
+-      - uses: gradle/actions/setup-gradle@v4
++
++      - name: Set up Gradle
++        uses: gradle/actions/setup-gradle@v4
++
++      - name: Make Gradle wrapper executable
++        run: chmod +x ./gradlew
++
++      - name: Print Gradle environment
++        run: ./gradlew --version
++
+       - name: Static analysis
+-        run: ./gradlew detekt || gradle detekt
++        run: ./gradlew --no-daemon detekt
++
+       - name: Unit tests
+-        run: ./gradlew testDebugUnitTest || gradle testDebugUnitTest
++        run: ./gradlew --no-daemon testDebugUnitTest
++
+       - name: Build debug APK
+-        run: ./gradlew assembleDebug || gradle assembleDebug
++        run: ./gradlew --no-daemon assembleDebug
++
++      - name: Upload unit test reports
++        if: always()
++        uses: actions/upload-artifact@v4
++        with:
++          name: unit-test-reports
++          path: app/build/reports/tests/
++          if-no-files-found: ignore
++
++      - name: Upload debug APK
++        if: success()
++        uses: actions/upload-artifact@v4
++        with:
++          name: WearBrowser-debug-apk
++          path: app/build/outputs/apk/debug/*.apk
++          if-no-files-found: error
+diff -ruN wb_urlfix/docs/05-development/CI_CD.md wb_ci/docs/05-development/CI_CD.md
+--- wb_urlfix/docs/05-development/CI_CD.md	2026-06-15 03:17:56.498593481 +0000
++++ wb_ci/docs/05-development/CI_CD.md	2026-06-15 03:21:47.683837317 +0000
+@@ -15,3 +15,17 @@
+ - 编译。
+ - 静态检查。
+ - 核心单测。
++
++## Current CI quality gate
++
++The current required gate is defined in `.github/workflows/android.yml` and mirrored locally by `scripts/quality-gate.sh`.
++
++Required commands:
++
++```bash
++./gradlew detekt
++./gradlew testDebugUnitTest
++./gradlew assembleDebug
++```
++
++Any pull request that changes runtime behavior should pass these checks before review.
+diff -ruN wb_urlfix/docs/05-development/GITHUB_ACTIONS.md wb_ci/docs/05-development/GITHUB_ACTIONS.md
+--- wb_urlfix/docs/05-development/GITHUB_ACTIONS.md	1970-01-01 00:00:00.000000000 +0000
++++ wb_ci/docs/05-development/GITHUB_ACTIONS.md	2026-06-15 03:21:47.672890809 +0000
+@@ -0,0 +1,54 @@
++# GitHub Actions
++
++WearBrowser uses GitHub Actions as the public quality gate for every push and pull request.
++
++## Workflow
++
++File:
++
++```text
++.github/workflows/android.yml
++```
++
++Checks:
++
++```bash
++./gradlew detekt
++./gradlew testDebugUnitTest
++./gradlew assembleDebug
++```
++
++## Local equivalent
++
++Run the same gate locally before pushing:
++
++```bash
++./scripts/quality-gate.sh
++```
++
++Or run commands manually:
++
++```bash
++./gradlew detekt
++./gradlew testDebugUnitTest
++./gradlew assembleDebug
++```
++
++## Required branch protection
++
++Recommended GitHub settings for `master` / `main`:
++
++- Require a pull request before merging.
++- Require status checks to pass before merging.
++- Require `Android CI / Quality Gate`.
++- Require conversation resolution before merging.
++- Do not allow force pushes.
++
++## Artifact policy
++
++CI uploads:
++
++- Unit test reports
++- Debug APK
++
++Debug APKs are for internal validation only and are not official releases.
+diff -ruN wb_urlfix/docs/adr/ADR-0001-android-webview-engine.md wb_ci/docs/adr/ADR-0001-android-webview-engine.md
+--- wb_urlfix/docs/adr/ADR-0001-android-webview-engine.md	1970-01-01 00:00:00.000000000 +0000
++++ wb_ci/docs/adr/ADR-0001-android-webview-engine.md	2026-06-15 03:21:47.622020170 +0000
+@@ -0,0 +1,41 @@
++# ADR-0001: Use Android WebView as the initial browser engine
++
++Status: Accepted
++
++Date: 2026-06-15
++
++## Context
++
++WearBrowser needs a browser engine that can run on Android watches with minimal packaging complexity, acceptable compatibility, and a low barrier for contributors.
++
++Alternatives considered:
++
++- Android WebView
++- GeckoView
++- Bundled Chromium-based engine
++- Custom lightweight renderer
++
++## Decision
++
++Use Android WebView as the initial engine implementation.
++
++The public browser abstraction remains `BrowserEngine`, so the product is not permanently coupled to WebView.
++
++## Consequences
++
++Positive:
++
++- Smaller APK and simpler distribution.
++- Easier first runnable version.
++- Uses the WebView implementation already available on Android devices.
++- Allows the team to focus on watch-first interaction, safe area, gestures, and layout optimization.
++
++Negative:
++
++- Web compatibility and performance depend on the device WebView provider.
++- Some advanced browser features are constrained by WebView APIs.
++- Engine-specific behavior must be isolated carefully.
++
++## Follow-up
++
++Keep all direct WebView access inside `WebViewBrowserEngine` and WebView-specific UI integration code. UI and domain logic must call `BrowserEngine` / `BrowserController` instead of directly manipulating WebView.
+diff -ruN wb_urlfix/docs/adr/ADR-0002-browser-engine-controller.md wb_ci/docs/adr/ADR-0002-browser-engine-controller.md
+--- wb_urlfix/docs/adr/ADR-0002-browser-engine-controller.md	1970-01-01 00:00:00.000000000 +0000
++++ wb_ci/docs/adr/ADR-0002-browser-engine-controller.md	2026-06-15 03:21:47.633085184 +0000
+@@ -0,0 +1,47 @@
++# ADR-0002: Route browser operations through BrowserEngine and BrowserController
++
++Status: Accepted
++
++Date: 2026-06-15
++
++## Context
++
++A browser app can quickly become difficult to maintain if UI code directly owns WebView instances, lifecycle, navigation, zoom, and JavaScript execution.
++
++WearBrowser also wants long-term engine replaceability.
++
++## Decision
++
++All browser operations must go through:
++
++```text
++UI / Gesture
++    ↓
++BrowserController
++    ↓
++BrowserEngine
++    ↓
++WebViewBrowserEngine
++```
++
++`BrowserController` coordinates product-level commands. `BrowserEngine` defines the engine contract. `WebViewBrowserEngine` is the Android WebView implementation.
++
++## Consequences
++
++Positive:
++
++- UI does not depend on WebView implementation details.
++- Gesture actions can be tested separately from WebView.
++- Engine replacement remains possible.
++- Lifecycle management is centralized.
++
++Negative:
++
++- More interfaces and indirection than a simple WebView demo.
++- Early development has more boilerplate.
++
++## Rules
++
++- Compose UI must not call `webView.goBack()` or equivalent directly.
++- New browser capabilities should first be represented in `BrowserEngine` or controller-level actions.
++- Engine callbacks should flow upward through listener/state mechanisms.
+diff -ruN wb_urlfix/docs/adr/ADR-0003-gesture-engine.md wb_ci/docs/adr/ADR-0003-gesture-engine.md
+--- wb_urlfix/docs/adr/ADR-0003-gesture-engine.md	1970-01-01 00:00:00.000000000 +0000
++++ wb_ci/docs/adr/ADR-0003-gesture-engine.md	2026-06-15 03:21:47.642191291 +0000
+@@ -0,0 +1,45 @@
++# ADR-0003: Use a GestureEngine for watch-first interaction
++
++Status: Accepted
++
++Date: 2026-06-15
++
++## Context
++
++WearBrowser's core differentiation is watch-first interaction: edge back, edge forward, edge zoom, Pie Menu, immersive controls, and round-screen ergonomics.
++
++Embedding gesture logic directly in Compose screens would make behavior difficult to tune and test.
++
++## Decision
++
++Use a dedicated `GestureEngine` and `GestureDispatcher` to classify pointer movement into semantic actions.
++
++Examples:
++
++- Edge Back
++- Edge Forward
++- Edge Zoom
++- Reveal Dock
++- Reveal Address Bar
++- Open Pie Menu
++- Reset Zoom
++
++## Consequences
++
++Positive:
++
++- Gesture behavior is testable without UI rendering.
++- Tuning thresholds is centralized.
++- Watch-first interactions can evolve independently from UI components.
++- Conflicts between gestures can be reasoned about explicitly.
++
++Negative:
++
++- Requires careful configuration to avoid overengineering.
++- Needs real-device tuning because watch screens differ widely.
++
++## Rules
++
++- Gesture thresholds must be configurable.
++- Any new global gesture must have tests.
++- Basic browsing must remain usable without advanced gestures.
+diff -ruN wb_urlfix/docs/adr/ADR-0004-watch-layout-engine.md wb_ci/docs/adr/ADR-0004-watch-layout-engine.md
+--- wb_urlfix/docs/adr/ADR-0004-watch-layout-engine.md	1970-01-01 00:00:00.000000000 +0000
++++ wb_ci/docs/adr/ADR-0004-watch-layout-engine.md	2026-06-15 03:21:47.651539742 +0000
+@@ -0,0 +1,43 @@
++# ADR-0004: Treat Watch Layout Engine as a first-class product module
++
++Status: Accepted
++
++Date: 2026-06-15
++
++## Context
++
++A normal desktop or phone page is often unusable on a watch, especially on round screens. Simple zoom is not enough.
++
++The product vision requires a Watch Layout Engine that can optimize content for tiny and round displays.
++
++## Decision
++
++Treat Watch Layout Engine (WLE) as a first-class module rather than a small Reader Mode helper.
++
++WLE should eventually handle:
++
++- Content block detection
++- Sidebar / footer / ad suppression
++- Main content centering
++- Round safe-area optimization
++- Per-site layout profiles
++- Reader Mode integration
++
++## Consequences
++
++Positive:
++
++- Creates a defensible product advantage.
++- Keeps page optimization logic out of UI code.
++- Enables progressive improvement site by site.
++
++Negative:
++
++- WLE is complex and must remain experimental until validated.
++- DOM manipulation and injected scripts require safety and compatibility review.
++
++## Rules
++
++- WLE behavior must be feature-flagged.
++- Site-specific rules must be isolated and documented.
++- WLE should never break basic browsing when disabled.
+diff -ruN wb_urlfix/docs/adr/ADR-0005-ci-quality-gate.md wb_ci/docs/adr/ADR-0005-ci-quality-gate.md
+--- wb_urlfix/docs/adr/ADR-0005-ci-quality-gate.md	1970-01-01 00:00:00.000000000 +0000
++++ wb_ci/docs/adr/ADR-0005-ci-quality-gate.md	2026-06-15 03:21:47.660721722 +0000
+@@ -0,0 +1,45 @@
++# ADR-0005: Enforce a CI quality gate on every push and pull request
++
++Status: Accepted
++
++Date: 2026-06-15
++
++## Context
++
++WearBrowser is an open-source product. As contributors join, the project needs a reliable baseline that prevents broken code from entering the main branch.
++
++## Decision
++
++Run an Android CI quality gate on every push and pull request.
++
++Required checks:
++
++- Static analysis: `./gradlew detekt`
++- Unit tests: `./gradlew testDebugUnitTest`
++- Debug build: `./gradlew assembleDebug`
++
++CI should also upload test reports and debug APK artifacts.
++
++## Consequences
++
++Positive:
++
++- Keeps the main branch buildable.
++- Gives contributors immediate feedback.
++- Makes releases safer.
++- Turns “可编译主干” into an enforceable rule.
++
++Negative:
++
++- CI time increases for every PR.
++- Some early experimental work may require feature branches.
++
++## Follow-up
++
++Once the project grows, add:
++
++- Android lint
++- Screenshot tests
++- Macrobenchmark
++- Release signing workflow
++- Dependency review
+diff -ruN wb_urlfix/docs/adr/README.md wb_ci/docs/adr/README.md
+--- wb_urlfix/docs/adr/README.md	1970-01-01 00:00:00.000000000 +0000
++++ wb_ci/docs/adr/README.md	2026-06-15 03:21:47.611634073 +0000
+@@ -0,0 +1,24 @@
++# Architecture Decision Records
++
++This directory records important architectural decisions for WearBrowser.
++
++Rules:
++
++1. Every major architectural change requires an ADR.
++2. ADRs are append-only. Do not rewrite history; supersede old ADRs with new ones.
++3. ADRs should explain context, decision, consequences, and alternatives.
++
++Status values:
++
++- Proposed
++- Accepted
++- Superseded
++- Deprecated
++
++Index:
++
++- [ADR-0001: Use Android WebView as the initial browser engine](ADR-0001-android-webview-engine.md)
++- [ADR-0002: Route browser operations through BrowserEngine and BrowserController](ADR-0002-browser-engine-controller.md)
++- [ADR-0003: Use a GestureEngine for watch-first interaction](ADR-0003-gesture-engine.md)
++- [ADR-0004: Treat Watch Layout Engine as a first-class product module](ADR-0004-watch-layout-engine.md)
++- [ADR-0005: Enforce a CI quality gate on every push and pull request](ADR-0005-ci-quality-gate.md)
+diff -ruN wb_urlfix/gradle.properties wb_ci/gradle.properties
+--- wb_urlfix/gradle.properties	1970-01-01 00:00:00.000000000 +0000
++++ wb_ci/gradle.properties	2026-06-15 03:21:47.562697560 +0000
+@@ -0,0 +1,7 @@
++android.useAndroidX=true
++android.enableJetifier=true
++
++org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
++kotlin.code.style=official
++org.gradle.caching=true
++org.gradle.configuration-cache=false
+diff -ruN wb_urlfix/scripts/quality-gate.sh wb_ci/scripts/quality-gate.sh
+--- wb_urlfix/scripts/quality-gate.sh	1970-01-01 00:00:00.000000000 +0000
++++ wb_ci/scripts/quality-gate.sh	2026-06-15 03:21:47.582417489 +0000
+@@ -0,0 +1,13 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$ROOT_DIR"
++
++if [[ ! -x ./gradlew ]]; then
++  chmod +x ./gradlew
++fi
++
++./gradlew --no-daemon detekt
++./gradlew --no-daemon testDebugUnitTest
++./gradlew --no-daemon assembleDebug

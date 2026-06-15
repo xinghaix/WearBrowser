@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Product and architecture discussion
+    url: https://github.com/xinghaix/WearBrowser/discussions
+    about: Use Discussions for open-ended product, architecture, and roadmap conversations.

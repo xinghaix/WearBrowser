@@ -1,0 +1,30 @@
+name: Build failure
+description: Report Gradle, Kotlin, Detekt, CI, or local quality-gate failures.
+title: "build: "
+labels: ["type: build", "needs: triage"]
+body:
+  - type: textarea
+    id: command
+    attributes:
+      label: Command
+      placeholder: ./scripts/quality-gate.sh
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Full error output
+      description: Paste the complete relevant output, not only the final line.
+      render: text
+    validations:
+      required: true
+  - type: input
+    id: java
+    attributes:
+      label: Java version
+      placeholder: java --version
+  - type: input
+    id: os
+    attributes:
+      label: OS
+      placeholder: macOS, Linux, Windows

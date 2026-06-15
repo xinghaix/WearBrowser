@@ -1,0 +1,35 @@
+area: docs:
+  - changed-files:
+      - any-glob-to-any-file:
+          - docs/**
+          - README.md
+          - ROADMAP.md
+          - CONTRIBUTING.md
+area: build:
+  - changed-files:
+      - any-glob-to-any-file:
+          - .github/**
+          - build.gradle.kts
+          - settings.gradle.kts
+          - gradle.properties
+          - app/build.gradle.kts
+          - scripts/**
+area: browser-engine:
+  - changed-files:
+      - any-glob-to-any-file:
+          - app/src/main/java/**/engine/**
+          - app/src/main/java/**/browser/**
+area: gesture:
+  - changed-files:
+      - any-glob-to-any-file:
+          - app/src/main/java/**/gesture/**
+area: ui:
+  - changed-files:
+      - any-glob-to-any-file:
+          - app/src/main/java/**/ui/**
+          - app/src/main/java/**/design/**
+area: tests:
+  - changed-files:
+      - any-glob-to-any-file:
+          - app/src/test/**
+          - app/src/androidTest/**

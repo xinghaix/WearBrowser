@@ -1,0 +1,42 @@
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+categories:
+  - title: 'Features'
+    labels:
+      - 'type: feature'
+  - title: 'Bug fixes'
+    labels:
+      - 'type: bug'
+  - title: 'Build and CI'
+    labels:
+      - 'type: build'
+      - 'area: build'
+  - title: 'Documentation'
+    labels:
+      - 'area: docs'
+  - title: 'Maintenance'
+    labels:
+      - 'type: refactor'
+      - 'type: chore'
+change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
+change-title-escapes: '\\<*_&'
+version-resolver:
+  major:
+    labels:
+      - 'release: major'
+  minor:
+    labels:
+      - 'release: minor'
+  patch:
+    labels:
+      - 'release: patch'
+  default: patch
+template: |
+  ## Changes
+
+  $CHANGES
+
+  ## Quality
+
+  - CI quality gate must pass before publishing.
+  - Android APK should be manually smoke-tested before release.

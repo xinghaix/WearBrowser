@@ -1,0 +1,31 @@
+name: UX feedback
+description: Report friction in gestures, round-screen layout, zoom, or visual design.
+title: "ux: "
+labels: ["area: ux", "needs: triage"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Edge Back
+        - Edge Zoom
+        - Pie Menu
+        - Round Safe Area
+        - Reader Mode
+        - Dock / Address Bar
+        - Theme / Visual Design
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: feedback
+    attributes:
+      label: Feedback
+      description: What felt slow, confusing, ugly, too small, too large, or hard to use?
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested improvement

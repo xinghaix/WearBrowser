@@ -121,3 +121,15 @@ Apache-2.0
 ## Current Implementation Sprint
 
 Sprint 2 integrates the Compose browser surface with `BrowserEngine + BrowserController`, reducing direct WebView coupling and preparing the project for real build validation.
+
+## Governance
+
+WearBrowser uses a product-grade open-source workflow:
+
+- Pull requests must pass the quality gate.
+- Issues use structured templates for bugs, build failures, feature requests, and UX feedback.
+- Architecture-level changes should be documented in ADRs.
+- Experimental behavior should be protected by feature flags.
+- Release notes are drafted from merged pull requests.
+
+See `docs/05-development/GITHUB_GOVERNANCE.md` for details.
