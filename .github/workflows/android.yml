@@ -9,16 +9,13 @@ on:
       - master
   workflow_dispatch:
 
-concurrency:
-  group: android-quality-${{ github.ref }}
-  cancel-in-progress: true
+permissions:
+  contents: read
 
 jobs:
-  quality:
-    name: Build, test and static analysis
+  detekt:
+    name: detekt
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,24 +24,48 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: 17
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Static analysis
+      - name: Run Detekt
         run: ./gradlew --no-daemon detekt
 
-      - name: Unit tests
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run unit tests
         run: ./gradlew --no-daemon testDebugUnitTest
+
+  assemble:
+    name: assemble
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Build debug APK
         run: ./gradlew --no-daemon assembleDebug
-
-      - name: Upload debug APK
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: WearBrowser-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
-          if-no-files-found: warn

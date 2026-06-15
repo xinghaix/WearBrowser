@@ -1,19 +1,37 @@
 # WearBrowser
 
-## Current implementation phase
-
-WearBrowser is currently in **Phase 3: Implementation Sprint 4**. The product and architecture documentation is mature, and the source code now contains concrete implementations of the core abstractions plus the first hardened watch-first gesture pipeline plus lifecycle-safe WebView ownership: `BrowserEngine`, `BrowserController`, `GestureEngine`, `GestureDispatcher`, `ZoomPolicy`, `TabPolicy`, `WatchLayoutEngine`, repositories, and design tokens.
-
-See `docs/07-sprints/IMPLEMENTATION_STATUS.md` for the latest engineering status.
-
+[![Android Quality Gate](https://github.com/xinghaix/WearBrowser/actions/workflows/android.yml/badge.svg)](https://github.com/xinghaix/WearBrowser/actions/workflows/android.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Wear%20OS%20%2F%20Android-green.svg)](#)
+[![Phase](https://img.shields.io/badge/phase-implementation%20sprint-orange.svg)](docs/07-sprints/IMPLEMENTATION_STATUS.md)
 
 WearBrowser is an open-source browser designed for Android watches and small-screen Android devices.
 
-It is not a phone browser squeezed into a watch. It is designed around watch-first interactions: global edge back, one-finger zoom, round-screen safe area, gesture-first navigation, per-site layout memory, immersive browsing and a watch-oriented Reader Mode.
+It is **not** a phone browser squeezed into a watch. It is designed around watch-first interactions: global edge back, one-finger zoom, round-screen safe area, gesture-first navigation, per-site layout memory, immersive browsing, and a watch-oriented Reader Mode.
 
-## Current Status
+## Current implementation phase
 
-`v1.3.3-foundation-sprint-4` is an implementation sprint build. It contains the browser core, watch-first interaction layer, product-quality scaffolding, CI configuration, documentation and release preparation files. Android SDK validation still needs to be run in a real Android development environment.
+WearBrowser is currently in **Phase 3: Implementation Sprint 4**.
+
+The product and architecture documentation is mature, and the source code now contains concrete implementations of the core abstractions plus the first hardened watch-first gesture pipeline and lifecycle-safe WebView ownership:
+
+- `BrowserEngine`
+- `BrowserController`
+- `GestureEngine`
+- `GestureDispatcher`
+- `ZoomPolicy`
+- `TabPolicy`
+- `WatchLayoutEngine`
+- Repository interfaces
+- Design tokens
+
+See [`docs/07-sprints/IMPLEMENTATION_STATUS.md`](docs/07-sprints/IMPLEMENTATION_STATUS.md) for the latest engineering status.
+
+## Current status
+
+`v1.3.3-foundation-sprint-4` is an implementation sprint build. It contains the browser core, watch-first interaction layer, product-quality scaffolding, CI configuration, documentation, and release preparation files.
+
+Android SDK validation has started, and the project is being hardened through a quality gate before feature expansion.
 
 ## Features
 
@@ -27,8 +45,8 @@ It is not a phone browser squeezed into a watch. It is designed around watch-fir
 - Top/bottom edge gestures to reveal controls
 - Long-press Edge Pie Menu
 - Fit-width shortcut
-- Per-site profile memory: zoom, UA, OLED, reader and safe-area mode
-- Auto site profiles for GitHub, Wikipedia and local/router pages
+- Per-site profile memory: zoom, UA, OLED, reader, and safe-area mode
+- Auto site profiles for GitHub, Wikipedia, and local/router pages
 - Auto / Strict / Fullscreen / Reader Optimized safe-area modes
 - Reader Mode prototype for article-like pages
 - Immersive full-screen browsing with auto-hiding dock
@@ -43,9 +61,9 @@ It is not a phone browser squeezed into a watch. It is designed around watch-fir
 - Feature flags for experimental modules
 - Product design tokens and OLED-first theme
 - Lifecycle-safe WebView pause/resume/destroy path
-- CI quality gate, Detekt config and unit-test scaffolding
+- CI quality gate, Detekt config, and unit-test scaffolding
 
-## Interaction Model
+## Interaction model
 
 | Gesture | Action |
 |---|---|
@@ -58,14 +76,14 @@ It is not a phone browser squeezed into a watch. It is designed around watch-fir
 | Bottom edge swipe up | Reveal dock |
 | Top edge swipe down | Reveal address/search bar dock |
 
-## Product Principles
+## Product principles
 
 1. **Watch-first navigation**: gestures are primary, tiny buttons are secondary.
 2. **Round-screen correctness**: round displays are a first-class target.
-3. **Best-in-class zoom**: 50%~300%, one-finger edge zoom, double-tap reset and per-site memory.
+3. **Best-in-class zoom**: 50%~300%, one-finger edge zoom, double-tap reset, and per-site memory.
 4. **Page-first UI**: immersive by default, controls appear only when needed.
-5. **Local-first privacy**: no telemetry, no analytics SDK and local profile storage.
-6. **Engineering discipline**: feature flags, quality gate, static analysis, tests and release checklists.
+5. **Local-first privacy**: no telemetry, no analytics SDK, and local profile storage.
+6. **Engineering discipline**: feature flags, quality gate, static analysis, tests, and release checklists.
 
 ## Build
 
@@ -73,20 +91,23 @@ It is not a phone browser squeezed into a watch. It is designed around watch-fir
 ./gradlew assembleDebug
 ```
 
-If the Gradle wrapper is not present in your checkout, use Android Studio or a local Gradle installation to generate it once:
+## Quality gate
+
+Use the local quality gate before pushing:
 
 ```bash
-gradle wrapper
+./scripts/quality-gate.sh
+```
+
+Equivalent Gradle commands:
+
+```bash
+./gradlew detekt
+./gradlew testDebugUnitTest
 ./gradlew assembleDebug
 ```
 
-## Quality Gate
-
-```bash
-./gradlew detekt testDebugUnitTest assembleDebug
-```
-
-## Project Layout
+## Project layout
 
 ```text
 app/src/main/java/com/wearbrowser/
@@ -94,33 +115,23 @@ app/src/main/java/com/wearbrowser/
 ├── browser/       # state, persistence, URL normalization, UI
 ├── config/        # product constants and feature flags
 ├── design/        # design tokens and theme
-├── gesture/       # gesture constants
+├── engine/        # BrowserEngine and WebView implementation
+├── gesture/       # gesture engine and actions
 ├── performance/   # tab sleep and overlay timing policy
 ├── product/       # onboarding, product copy, release readiness
 ├── ui/            # round/square safe-area calculation
-└── webview/       # WebView wrapper and settings
+└── webview/       # WebView wrapper and compatibility shims
 ```
 
 ## Documentation
 
-- `docs/ARCHITECTURE.md`
-- `docs/PRODUCT_QUALITY.md`
-- `docs/RELEASE.md`
-- `PRIVACY.md`
-- `ROADMAP.md`
-
-## Release Notes
-
-See `CHANGELOG.md`.
-
-## License
-
-Apache-2.0
-
-
-## Current Implementation Sprint
-
-Sprint 2 integrates the Compose browser surface with `BrowserEngine + BrowserController`, reducing direct WebView coupling and preparing the project for real build validation.
+- [`docs/01-product/PRODUCT.md`](docs/01-product/PRODUCT.md)
+- [`docs/02-architecture/ARCHITECTURE.md`](docs/02-architecture/ARCHITECTURE.md)
+- [`docs/03-ui/DESIGN_SYSTEM.md`](docs/03-ui/DESIGN_SYSTEM.md)
+- [`docs/05-development/GITHUB_GOVERNANCE.md`](docs/05-development/GITHUB_GOVERNANCE.md)
+- [`docs/05-development/PROJECT_MANAGEMENT.md`](docs/05-development/PROJECT_MANAGEMENT.md)
+- [`PRIVACY.md`](PRIVACY.md)
+- [`ROADMAP.md`](ROADMAP.md)
 
 ## Governance
 
@@ -132,4 +143,12 @@ WearBrowser uses a product-grade open-source workflow:
 - Experimental behavior should be protected by feature flags.
 - Release notes are drafted from merged pull requests.
 
-See `docs/05-development/GITHUB_GOVERNANCE.md` for details.
+See [`docs/05-development/GITHUB_GOVERNANCE.md`](docs/05-development/GITHUB_GOVERNANCE.md) for details.
+
+## Release notes
+
+See [`CHANGELOG.md`](CHANGELOG.md).
+
+## License
+
+Apache-2.0

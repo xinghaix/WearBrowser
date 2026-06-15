@@ -1,3 +1,17 @@
+## Unreleased
+
+### Added
+
+- Added project management documentation for milestones, labels, issue quality, and PR quality.
+- Added Sprint 5 planning document for the first runnable browser milestone.
+- Added manual test matrix for install, launch, browsing, navigation, zoom, gestures, round screen, lifecycle, and downloads.
+- Added scripts to seed GitHub labels, milestones, and P1 issues.
+
+### Changed
+
+- Re-formatted `README.md` into readable Markdown with badges, quality gate instructions, governance notes, and documentation links.
+- Re-formatted Android Quality Gate workflow and removed fallback commands that could hide CI failures.
+
 # Changelog
 
 ## 1.3.3-foundation-sprint-4
